@@ -444,15 +444,18 @@ function InterruptNotifyLib:GetActiveInterrupts(nClassId)
 	for key, value in pairs(tLocaleToAbilityNames[nClassId][locale]) do
 		for k, v in pairs(tAbilitiesList) do
 			if v.strName == value then
-				local tAbility 		= v.tTiers[v.nCurrentTier]
-				local nCurrentTier 	= tAbility.nTier
-				local nAbilityId	= tAbility.nId
-				local nSpellId		= tAbility.splObject:GetId()
+				if v.nCurrentTier > 0 then
+					-- v.nCurrentTier can be 0 if ability is locked, and v.tTiers table does not contain 0
+					local tAbility 		= v.tTiers[v.nCurrentTier]
+					local nCurrentTier 	= tAbility.nTier
+					local nAbilityId	= tAbility.nId
+					local nSpellId		= tAbility.splObject:GetId()
 
-				if in_table(nAbilityId, tAbilitiesActiveById) then
-					tAbilities[value] = tClassIdToAbilities[nClassId][key][nCurrentTier]
-					tAbilities[value]["nAbilityId"]	= nAbilityId
-					tAbilities[value]["nSpellId"]	= nSpellId
+					if in_table(nAbilityId, tAbilitiesActiveById) then
+						tAbilities[value] = tClassIdToAbilities[nClassId][key][nCurrentTier]
+						tAbilities[value]["nAbilityId"]	= nAbilityId
+						tAbilities[value]["nSpellId"]	= nSpellId
+					end
 				end
 			end
 		end
