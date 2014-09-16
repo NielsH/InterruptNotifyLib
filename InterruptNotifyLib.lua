@@ -28,13 +28,25 @@ require "ICCommLib"
 -----------------------------------------------------------------------------------------------
 -- InterruptNotifyLib Module Definition
 -----------------------------------------------------------------------------------------------
-local MAJOR, MINOR = "InterruptNotifyLib-0.1", 1
-local _pkg = Apollo.GetPackage(MAJOR)
-if _pkg and (_pkg.nVersion or 0) >= MINOR then
-        return -- no upgrade is needed
+local InterruptNotifyLib = {}
+
+-----------------------------------------------------------------------------------------------
+-- Initialization
+-----------------------------------------------------------------------------------------------
+function InterruptNotifyLib:new(o)
+	o = o or {}
+    setmetatable(o, self)
+    self.__index = self 
+	return o
 end
-local InterruptNotifyLib = _pkg and _pkg.tPackage or {}
- 
+
+function InterruptNotifyLib:Init()
+	local bHasConfigureFunction = false
+	local strConfigureButtonText = ""
+	local tDependencies = {}
+
+    Apollo.RegisterAddon(self, bHasConfigureButton, strConfigureButtonText, tDependencies)
+end
 -----------------------------------------------------------------------------------------------
 -- Constants
 -----------------------------------------------------------------------------------------------
@@ -57,6 +69,9 @@ local tPlayerInfo = {
 
 -- Holds all the channels we are subscribed to
 local tChannels = {}
+
+-- Addon that holds our handler function, assigned in OnLoad
+local tHandler = nil
 
 -- Abilities we should monitor
 -- When adding/changing locales,
@@ -396,9 +411,13 @@ function InterruptNotifyLib:GetChannels()
 	return tChannels
 end
 
-function InterruptNotifyLib:OnChannelMsg(channel, tMsg)
+function InterruptNotifyLib:OnChannelMsg(channel, tMsg, strSender)
 	local tOwner		= tChannels[tMsg.strChannel]["CallbackOwner"]
 	local strCallback	= tChannels[tMsg.strChannel]["CallbackFunc"]
+
+	if type(tOwner) ~= "table" or type("strCallback") ~= "string" or type(tOwner[strCallback]) ~= "function" then
+		error("Invalid callback.")
+	end
 
 	tOwner[strCallback](tOwner, tMsg)
 end
@@ -425,6 +444,7 @@ function InterruptNotifyLib:OnNotifyTimer()
 		tMsgData["strChannel"] = key
 		value["CommChannel"]:SendMessage(tMsgData)
 	end
+	--Rover:AddWatch("msgData", tMsgData, 0)
 end
 
 function InterruptNotifyLib:GetActiveInterrupts(nClassId)
@@ -479,4 +499,5 @@ end
 -----------------------------------------------------------------------------------------------
 -- InterruptNotifyLib Instance
 -----------------------------------------------------------------------------------------------
-Apollo.RegisterPackage(InterruptNotifyLib, MAJOR, MINOR, {})
+local InterruptNotifyLibInst = InterruptNotifyLib:new()
+InterruptNotifyLibInst:Init()
