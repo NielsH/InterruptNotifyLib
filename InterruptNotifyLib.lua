@@ -444,7 +444,6 @@ function InterruptNotifyLib:OnNotifyTimer()
 		tMsgData["strChannel"] = key
 		value["CommChannel"]:SendMessage(tMsgData)
 	end
-	--Rover:AddWatch("msgData", tMsgData, 0)
 end
 
 function InterruptNotifyLib:GetActiveInterrupts(nClassId)
