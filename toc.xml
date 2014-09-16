@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Addon Author="KamiNuvini" APIVersion="9" Name="InterruptNotifyLib" Description="Library that sends and receives interrupt notifications within subscribed channels and passes them to a callback function">
+    <Script Name="InterruptNotifyLib.lua"/>
+</Addon>
