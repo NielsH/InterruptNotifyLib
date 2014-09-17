@@ -414,11 +414,21 @@ end
 function InterruptNotifyLib:OnChannelMsg(channel, tMsg, strSender)
 	-- This fires when we receive messages from other players. We will first reconstruct the message
 	-- and convert spell ids into localized names before sending it off to the callback handler.
-	local tCallbackMsg = {}
+	-- We also have to do some extra handling here in case we get bogus data on the channel.
+	if type(tMsg) ~= "table" or not tMsg["tAbilities"] then return false end
+
+	local tCallbackMsg			= {}
+	tCallbackMsg["strSender"]	= strSender
+	tCallbackMsg["tAbilities"]	= {}
+
 	local tAbilities = tMsg["tAbilities"]
 	for key, value in pairs(tAbilities) do
+		if not value or type(value["nSpellId"]) ~= "number" then return false end
+		local tSplObject		= GameLib.GetSpell(value["nSpellId"])
+		if not tSplObject then return false end
 		local strName 			= GameLib.GetSpell(value["nSpellId"]):GetName()
-		tCallbackMsg[strName]	= value
+		if not strName then return false end
+		tCallbackMsg["tAbilities"][strName]	= value
 	end
 
 	local tOwner		= tChannels[tMsg.strChannel]["CallbackOwner"]
