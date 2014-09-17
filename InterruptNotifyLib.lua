@@ -412,6 +412,15 @@ function InterruptNotifyLib:GetChannels()
 end
 
 function InterruptNotifyLib:OnChannelMsg(channel, tMsg, strSender)
+	-- This fires when we receive messages from other players. We will first reconstruct the message
+	-- and convert spell ids into localized names before sending it off to the callback handler.
+	local tCallbackMsg = {}
+	local tAbilities = tMsg["tAbilities"]
+	for key, value in pairs(tAbilities) do
+		local strName 			= GameLib.GetSpell(value["nSpellId"]):GetName()
+		tCallbackMsg[strName]	= value
+	end
+
 	local tOwner		= tChannels[tMsg.strChannel]["CallbackOwner"]
 	local strCallback	= tChannels[tMsg.strChannel]["CallbackFunc"]
 
@@ -419,7 +428,7 @@ function InterruptNotifyLib:OnChannelMsg(channel, tMsg, strSender)
 		error("Invalid callback.")
 	end
 
-	tOwner[strCallback](tOwner, tMsg)
+	tOwner[strCallback](tOwner, tCallbackMsg)
 end
 
 function InterruptNotifyLib:OnNotifyTimer()
@@ -471,9 +480,9 @@ function InterruptNotifyLib:GetActiveInterrupts(nClassId)
 					local nSpellId		= tAbility.splObject:GetId()
 
 					if in_table(nAbilityId, tAbilitiesActiveById) then
-						tAbilities[value] = tClassIdToAbilities[nClassId][key][nCurrentTier]
-						tAbilities[value]["nAbilityId"]	= nAbilityId
-						tAbilities[value]["nSpellId"]	= nSpellId
+						tAbilities[nSpellId] 				= tClassIdToAbilities[nClassId][key][nCurrentTier]
+						tAbilities[nSpellId]["nAbilityId"]	= nAbilityId
+						tAbilities[nSpellId]["nSpellId"]	= nSpellId
 					end
 				end
 			end
